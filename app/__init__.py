@@ -1,9 +1,9 @@
 import os
-from flask import Flask
+from flask import Flask, render_template
 import config
 
 def create_app():
-    """Flask app factory"""
+    """Flask app factory with configuration and blueprint registration"""
     app = Flask(__name__)
     app.secret_key = config.SECRET_KEY
     
@@ -11,5 +11,22 @@ def create_app():
     with app.app_context():
         from app.database import create_tables
         create_tables()
+    
+    
+    from app.routes.authRoutes import bp as auth_bp
+    app.register_blueprint(auth_bp)
+    
+    # Error handler
+    @app.errorhandler(403)
+    def forbidden(e):
+        return render_template("403.html"), 403
+    
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template("404.html"), 404
+    
+    @app.errorhandler(500)
+    def internal_error(e):
+        return render_template("500.html"), 500
     
     return app
