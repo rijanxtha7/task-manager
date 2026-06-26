@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Tasks - TaskManager{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem 0;">
+    <!-- Header Section -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <h2 style="color: #2c3e50;">📋 My Tasks</h2>
+        <a href="{{ url_for('tasks.create_task') }}" 
+           style="background-color: #27ae60; color: white; padding: 0.8rem 1.5rem; text-decoration: none; border-radius: 5px; font-weight: 500;">
+            + Create Task
+        </a>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+        <a href="{{ url_for('tasks.list_tasks', status='all') }}" 
+           style="padding: 0.6rem 1.2rem; border-radius: 5px; text-decoration: none; background-color: {% if current_filter == 'all' %}#3498db{% else %}#ecf0f1{% endif %}; color: {% if current_filter == 'all' %}white{% else %}#2c3e50{% endif %}; font-weight: 500; transition: all 0.3s;">
+            All Tasks
+        </a>
+        <a href="{{ url_for('tasks.list_tasks', status='pending') }}" 
+           style="padding: 0.6rem 1.2rem; border-radius: 5px; text-decoration: none; background-color: {% if current_filter == 'pending' %}#f39c12{% else %}#ecf0f1{% endif %}; color: {% if current_filter == 'pending' %}white{% else %}#2c3e50{% endif %}; font-weight: 500; transition: all 0.3s;">
+            Pending
+        </a>
+        <a href="{{ url_for('tasks.list_tasks', status='completed') }}" 
+           style="padding: 0.6rem 1.2rem; border-radius: 5px; text-decoration: none; background-color: {% if current_filter == 'completed' %}#27ae60{% else %}#ecf0f1{% endif %}; color: {% if current_filter == 'completed' %}white{% else %}#2c3e50{% endif %}; font-weight: 500; transition: all 0.3s;">
+            Completed
+        </a>
+    </div>
+
+    <!-- Tasks List -->
+    {% if tasks %}
+    <div style="display: grid; gap: 1.5rem;">
+        {% for task in tasks %}
+        <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 4px solid {% if task.status == 'completed' %}#27ae60{% else %}#3498db{% endif %};">
+            <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem; flex-wrap: wrap;">
+                <div style="flex: 1;">
+                    <h3 style="margin: 0 0 0.5rem 0; color: {% if task.status == 'completed' %}#95a5a6; text-decoration: line-through{% else %}#2c3e50{% endif %};">
+                        {{ task.title }}
+                    </h3>
+                    <p style="margin: 0 0 1rem 0; color: #666;">{{ task.description }}</p>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <span style="background-color: {% if task.status == 'completed' %}#27ae60{% else %}#f39c12{% endif %}; color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem;">
+                            {{ task.status.upper() }}
+                        </span>
+                        <small style="color: #95a5a6;">Created: {{ task.created_at }}</small>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <form method="POST" action="{{ url_for('tasks.toggle_task', task_id=task.id) }}" style="display: inline;">
+                        <button type="submit" style="background-color: {% if task.status == 'completed' %}#f39c12{% else %}#27ae60{% endif %}; color: white; padding: 0.5rem 1rem; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">
+                            {% if task.status == 'completed' %}↩ Reopen{% else %}✓ Complete{% endif %}
+                        </button>
+                    </form>
+                    <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}" 
+                       style="background-color: #3498db; color: white; padding: 0.5rem 1rem; text-decoration: none; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">
+                        ✏ Edit
+                    </a>
+                    <form method="POST" action="{{ url_for('tasks.delete_task', task_id=task.id) }}" style="display: inline;">
+                        <button type="submit" style="background-color: #e74c3c; color: white; padding: 0.5rem 1rem; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9rem;" onclick="return confirm('Are you sure?')">
+                            🗑 Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 3rem; background: #ecf0f1; border-radius: 8px;">
+        <p style="color: #666; font-size: 1.1rem;">No tasks yet. 
+            <a href="{{ url_for('tasks.create_task') }}" style="color: #3498db; text-decoration: none; font-weight: 500;">Create one now!</a>
+        </p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
