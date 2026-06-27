@@ -13,6 +13,29 @@
         </a>
     </div>
 
+    <!-- Search Form -->
+    <form method="GET" action="{{ url_for('tasks.search_tasks') }}" style="margin-bottom: 2rem;">
+        <div style="display: flex; gap: 0.5rem;">
+            <input 
+                type="text" 
+                name="q" 
+                placeholder="Search tasks by title or description..."
+                value="{{ search_query or '' }}"
+                style="flex: 1; padding: 0.8rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+            <button 
+                type="submit"
+                style="background-color: #3498db; color: white; padding: 0.8rem 1.5rem; border: none; border-radius: 5px; cursor: pointer; font-weight: 500;">
+                🔍 Search
+            </button>
+            {% if search_query %}
+            <a href="{{ url_for('tasks.list_tasks') }}" 
+               style="background-color: #95a5a6; color: white; padding: 0.8rem 1.5rem; text-decoration: none; border-radius: 5px; font-weight: 500;">
+                Clear
+            </a>
+            {% endif %}
+        </div>
+    </form>
+    
     <!-- Filter Buttons -->
     <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
         <a href="{{ url_for('tasks.list_tasks', status='all') }}" 

@@ -221,3 +221,35 @@ def toggle_task(task_id):
         conn.close()
     
     return redirect(url_for("tasks.list_tasks"))
+def search_tasks():
+    """Search tasks by title or description"""
+    if not session.get("user_id"):
+        return redirect(url_for("auth.login"))
+    
+    user_id = session.get("user_id")
+    search_query = request.args.get("q", "").strip()
+    
+    if not search_query:
+        return redirect(url_for("tasks.list_tasks"))
+    
+    conn = get_connection()
+    if not conn:
+        flash("Database connection error.", "danger")
+        return render_template("tasks.html", tasks=[], current_filter="all", search_query="")
+    
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "SELECT * FROM tasks WHERE user_id = %s AND (title LIKE %s OR description LIKE %s) ORDER BY created_at DESC",
+            (user_id, f"%{search_query}%", f"%{search_query}%")
+        )
+        
+        tasks = cursor.fetchall()
+        return render_template("tasks.html", tasks=tasks, current_filter="all", search_query=search_query)
+    
+    except Exception as e:
+        flash("Error searching tasks.", "danger")
+        return render_template("tasks.html", tasks=[], current_filter="all", search_query="")
+    finally:
+        cursor.close()
+        conn.close()
