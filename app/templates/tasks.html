@@ -51,6 +51,27 @@
             Completed
         </a>
     </div>
+    
+    <!-- Sorting Options -->
+    <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; align-items: center;">
+        <span style="color: #666; font-weight: 500;">Sort by:</span>
+        <a href="{{ url_for('tasks.list_tasks', status=current_filter, sort='created_at', order='DESC') }}" 
+           style="padding: 0.6rem 1.2rem; border-radius: 5px; text-decoration: none; background-color: {% if sort_by == 'created_at' and sort_order == 'DESC' %}#9b59b6{% else %}#ecf0f1{% endif %}; color: {% if sort_by == 'created_at' and sort_order == 'DESC' %}white{% else %}#2c3e50{% endif %}; font-weight: 500; font-size: 0.9rem; transition: all 0.3s;">
+            📅 Newest First
+        </a>
+        <a href="{{ url_for('tasks.list_tasks', status=current_filter, sort='created_at', order='ASC') }}" 
+           style="padding: 0.6rem 1.2rem; border-radius: 5px; text-decoration: none; background-color: {% if sort_by == 'created_at' and sort_order == 'ASC' %}#9b59b6{% else %}#ecf0f1{% endif %}; color: {% if sort_by == 'created_at' and sort_order == 'ASC' %}white{% else %}#2c3e50{% endif %}; font-weight: 500; font-size: 0.9rem; transition: all 0.3s;">
+            📅 Oldest First
+        </a>
+        <a href="{{ url_for('tasks.list_tasks', status=current_filter, sort='title', order='ASC') }}" 
+           style="padding: 0.6rem 1.2rem; border-radius: 5px; text-decoration: none; background-color: {% if sort_by == 'title' %}#9b59b6{% else %}#ecf0f1{% endif %}; color: {% if sort_by == 'title' %}white{% else %}#2c3e50{% endif %}; font-weight: 500; font-size: 0.9rem; transition: all 0.3s;">
+            🔤 Title (A-Z)
+        </a>
+        <a href="{{ url_for('tasks.list_tasks', status=current_filter, sort='status', order='ASC') }}" 
+           style="padding: 0.6rem 1.2rem; border-radius: 5px; text-decoration: none; background-color: {% if sort_by == 'status' %}#9b59b6{% else %}#ecf0f1{% endif %}; color: {% if sort_by == 'status' %}white{% else %}#2c3e50{% endif %}; font-weight: 500; font-size: 0.9rem; transition: all 0.3s;">
+            ✓ Status
+        </a>
+    </div>
 
     <!-- Tasks List -->
     {% if tasks %}
