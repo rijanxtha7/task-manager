@@ -4,7 +4,7 @@ from app.utils import login_required
 from datetime import datetime
 
 def list_tasks():
-    """List all tasks for logged-in user"""
+    """List all tasks for logged-in user with filtering and sorting"""
     if not session.get("user_id"):
         return redirect(url_for("auth.login"))
     
@@ -16,27 +16,33 @@ def list_tasks():
     
     cursor = conn.cursor()
     try:
-        # Get filter parameter
+        # Get filter and sort parameters
         status_filter = request.args.get("status", "all")
+        sort_by = request.args.get("sort", "created_at")
+        sort_order = request.args.get("order", "DESC")
         
+        # Validate sort parameters (prevent SQL injection)
+        valid_sorts = ["created_at", "title", "status"]
+        valid_orders = ["ASC", "DESC"]
+        
+        if sort_by not in valid_sorts:
+            sort_by = "created_at"
+        if sort_order not in valid_orders:
+            sort_order = "DESC"
+        
+        # Build query based on filter
         if status_filter == "completed":
-            cursor.execute(
-                "SELECT * FROM tasks WHERE user_id = %s AND status = 'completed' ORDER BY created_at DESC",
-                (user_id,)
-            )
+            query = f"SELECT * FROM tasks WHERE user_id = %s AND status = 'completed' ORDER BY {sort_by} {sort_order}"
+            cursor.execute(query, (user_id,))
         elif status_filter == "pending":
-            cursor.execute(
-                "SELECT * FROM tasks WHERE user_id = %s AND status = 'pending' ORDER BY created_at DESC",
-                (user_id,)
-            )
+            query = f"SELECT * FROM tasks WHERE user_id = %s AND status = 'pending' ORDER BY {sort_by} {sort_order}"
+            cursor.execute(query, (user_id,))
         else:
-            cursor.execute(
-                "SELECT * FROM tasks WHERE user_id = %s ORDER BY created_at DESC",
-                (user_id,)
-            )
+            query = f"SELECT * FROM tasks WHERE user_id = %s ORDER BY {sort_by} {sort_order}"
+            cursor.execute(query, (user_id,))
         
         tasks = cursor.fetchall()
-        return render_template("tasks.html", tasks=tasks, current_filter=status_filter)
+        return render_template("tasks.html", tasks=tasks, current_filter=status_filter, sort_by=sort_by, sort_order=sort_order)
     
     except Exception as e:
         flash("Error fetching tasks.", "danger")
@@ -44,7 +50,7 @@ def list_tasks():
     finally:
         cursor.close()
         conn.close()
-
+        
 def create_task():
     """Create a new task"""
     if not session.get("user_id"):
