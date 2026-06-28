@@ -52,7 +52,7 @@ def list_tasks():
         conn.close()
         
 def create_task():
-    """Create a new task with priority"""
+    """Create a new task with priority and due date"""
     if not session.get("user_id"):
         return redirect(url_for("auth.login"))
     
@@ -60,6 +60,7 @@ def create_task():
         title = request.form.get("title", "").strip()
         description = request.form.get("description", "").strip()
         priority = request.form.get("priority", "medium").strip()
+        due_date = request.form.get("due_date", "").strip()
         user_id = session.get("user_id")
         
         # Validation
@@ -76,6 +77,14 @@ def create_task():
         if priority not in valid_priorities:
             priority = "medium"
         
+        # Validate due date format (optional)
+        if due_date:
+            try:
+                datetime.strptime(due_date, "%Y-%m-%d")
+            except ValueError:
+                flash("Invalid date format. Use YYYY-MM-DD.", "danger")
+                return render_template("create_task.html")
+        
         conn = get_connection()
         if not conn:
             flash("Database connection error.", "danger")
@@ -83,7 +92,7 @@ def create_task():
         
         cursor = conn.cursor()
         try:
-            # Note: Priority will be stored once database schema is updated
+            # Note: Priority and due_date will be stored once database schema is updated
             cursor.execute(
                 "INSERT INTO tasks (user_id, title, description, status) VALUES (%s, %s, %s, %s)",
                 (user_id, title, description, "pending")
@@ -128,6 +137,7 @@ def edit_task(task_id):
         title = request.form.get("title", "").strip()
         description = request.form.get("description", "").strip()
         priority = request.form.get("priority", "medium").strip()
+        due_date = request.form.get("due_date", "").strip()
         
         # Validation
         if not title:
@@ -137,7 +147,14 @@ def edit_task(task_id):
         if len(title) > 200:
             flash("Title must be under 200 characters.", "danger")
             return render_template("edit_task.html", task=task)
-        
+        # Validate due date format (optional)
+        if due_date:
+            try:
+                datetime.strptime(due_date, "%Y-%m-%d")
+            except ValueError:
+                flash("Invalid date format. Use YYYY-MM-DD.", "danger")
+                return render_template("edit_task.html", task=task)
+            
         # Validate priority
         valid_priorities = ["low", "medium", "high"]
         if priority not in valid_priorities:
