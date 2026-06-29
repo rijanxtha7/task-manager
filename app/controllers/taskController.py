@@ -52,7 +52,7 @@ def list_tasks():
         conn.close()
         
 def create_task():
-    """Create a new task with priority and due date"""
+    """Create a new task with priority, due date, and category"""
     if not session.get("user_id"):
         return redirect(url_for("auth.login"))
     
@@ -61,6 +61,7 @@ def create_task():
         description = request.form.get("description", "").strip()
         priority = request.form.get("priority", "medium").strip()
         due_date = request.form.get("due_date", "").strip()
+        category = request.form.get("category", "general").strip()
         user_id = session.get("user_id")
         
         # Validation
@@ -77,6 +78,11 @@ def create_task():
         if priority not in valid_priorities:
             priority = "medium"
         
+        # Validate category
+        valid_categories = ["general", "work", "personal", "shopping", "health", "other"]
+        if category not in valid_categories:
+            category = "general"
+        
         # Validate due date format (optional)
         if due_date:
             try:
@@ -92,7 +98,7 @@ def create_task():
         
         cursor = conn.cursor()
         try:
-            # Note: Priority and due_date will be stored once database schema is updated
+            # Note: Priority, due_date, and category will be stored once database schema is updated
             cursor.execute(
                 "INSERT INTO tasks (user_id, title, description, status) VALUES (%s, %s, %s, %s)",
                 (user_id, title, description, "pending")
@@ -111,7 +117,7 @@ def create_task():
     return render_template("create_task.html")
 
 def edit_task(task_id):
-    """Edit an existing task with priority support"""
+    """Edit an existing task with priority, due date, and category support"""
     if not session.get("user_id"):
         return redirect(url_for("auth.login"))
     
@@ -138,6 +144,7 @@ def edit_task(task_id):
         description = request.form.get("description", "").strip()
         priority = request.form.get("priority", "medium").strip()
         due_date = request.form.get("due_date", "").strip()
+        category = request.form.get("category", "general").strip()
         
         # Validation
         if not title:
@@ -159,6 +166,11 @@ def edit_task(task_id):
         valid_priorities = ["low", "medium", "high"]
         if priority not in valid_priorities:
             priority = "medium"
+        
+        # Validate category
+        valid_categories = ["general", "work", "personal", "shopping", "health", "other"]
+        if category not in valid_categories:
+            category = "general"
         
         try:
             cursor.execute(
