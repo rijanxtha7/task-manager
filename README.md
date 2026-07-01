@@ -1,29 +1,105 @@
 # TaskManager
 
-A Flask-based task management web application with user authentication and session management.
+A full-stack web application built with Flask and MySQL for managing personal tasks efficiently.
 
 ## Features
-- User registration and login
-- Create, read, update, delete tasks
-- Secure session management
-- Role-based access control (admin/user)
 
-## Technologies
-- Flask (backend)
-- MySQL (database)
-- Jinja2 (templating)
-- HTML/CSS (frontend)
+- **User Authentication** - Register, login, and logout securely
+- **Task Management** - Create, read, update, and delete tasks
+- **Task Search** - Search tasks by title or description
+- **Task Filtering** - Filter tasks by status (all, pending, completed)
+- **Task Sorting** - Sort tasks by date, title, or status
+- **Task Priority** - Set task priority (low, medium, high)
+- **Task Due Dates** - Set optional due dates for tasks
+- **Task Categories** - Organize tasks by category (general, work, personal, shopping, health, other)
+- **Task Toggle** - Mark tasks as complete or incomplete
+- **Admin Dashboard** - Admin users can manage all users
+- **Role-based Access** - Admin and user roles with different permissions
+- **Error Handling** - Custom 403, 404, and 500 error pages
+- **Responsive UI** - Clean and modern interface
 
-## Setup
-1. Clone the repository
-2. Create a virtual environment: `python -m venv .venv`
-3. Activate it: `.venv\Scripts\activate`
-4. Install packages: `pip install -r requirements.txt`
-5. Create `.env` file with MySQL credentials
-6. Run: `python run.py`
+## Technologies Used
 
-## GitHub
-[Link will be added after first commit]
+- **Backend:** Python, Flask
+- **Database:** MySQL with PyMySQL
+- **Frontend:** HTML5, CSS3, Jinja2 Templates
+- **Authentication:** Werkzeug password hashing
+- **Version Control:** Git & GitHub
+- **Environment:** python-dotenv for configuration
 
-## Video Demo
-[Link will be added after recording]
+## Project Structure
+TaskManager/
+├── run.py              # Flask entry point
+├── config.py           # Configuration settings
+├── requirements.txt    # Python dependencies
+├── .env               # Environment variables (not committed)
+├── .gitignore         # Git ignore rules
+└── app/
+├── init.py    # Flask app factory
+├── database.py    # Database connection
+├── utils.py       # Utility decorators
+├── controllers/
+│   ├── authController.py   # Authentication logic
+│   └── taskController.py  # Task management logic
+├── routes/
+│   ├── authRoutes.py      # Authentication routes
+│   └── taskRoutes.py      # Task routes
+└── templates/
+├── base.html          # Base template
+├── home.html          # Home page
+├── login.html         # Login page
+├── register.html      # Register page
+├── dashboard.html     # Dashboard page
+├── tasks.html         # Task list page
+├── create_task.html   # Create task page
+├── edit_task.html     # Edit task page
+├── 403.html           # Forbidden error page
+├── 404.html           # Not found error page
+└── 500.html           # Server error page
+
+## Installation
+
+1. **Clone the repository:**
+```bash
+git clone https://github.com/rijanxtha7/task-manager.git
+cd task-manager
+```
+
+2. **Create virtual environment:**
+```bash
+py -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+3. **Install dependencies:**
+```bash
+pip install -r requirements.txt
+```
+
+4. **Create `.env` file:**
+SECRET_KEY=your-secret-key
+MYSQL_HOST=localhost
+MYSQL_USER=root
+MYSQL_PASSWORD=your-password
+MYSQL_DATABASE=task_manager
+DEBUG=True
+
+5. **Create MySQL database:**
+```sql
+CREATE DATABASE task_manager;
+```
+
+6. **Run the application:**
+```bash
+python run.py
+```
+
+7. **Open browser:** `http://127.0.0.1:5000`
+
+## Default Admin Account
+
+- **Email:** admin@taskmanager.com
+- **Password:** admin123
+
+## GitHub Repository
+https://github.com/rijanxtha7/task-manager.git
