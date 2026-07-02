@@ -47,11 +47,20 @@ def create_tables():
                 title VARCHAR(200) NOT NULL,
                 description TEXT,
                 status VARCHAR(20) DEFAULT 'pending',
+                priority VARCHAR(20) DEFAULT 'medium',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
         """)
+        
+        # Add priority column if it doesn't exist (for existing databases)
+        try:
+            cursor.execute("ALTER TABLE tasks ADD COLUMN priority VARCHAR(20) DEFAULT 'medium'")
+            conn.commit()
+            print("✓ Priority column added successfully")
+        except Exception:
+            pass  # Column already exists
         
         # Create default admin user if doesn't exist
         cursor.execute("SELECT * FROM users WHERE email = %s", ("admin@taskmanager.com",))
