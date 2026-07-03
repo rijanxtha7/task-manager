@@ -4,8 +4,7 @@ import config
 
 def create_app():
     """Flask app factory with configuration and blueprint registration"""
-    template_dir = os.path.abspath("C:\\Rijan Web\\app\\templates")
-    app = Flask(__name__, template_folder=template_dir)
+    app = Flask(__name__)
     app.secret_key = config.SECRET_KEY
 
     # Initialize database tables on startup
