@@ -100,8 +100,8 @@ def create_task():
         try:
             # Note: Priority, due_date, and category will be stored once database schema is updated
             cursor.execute(
-                "INSERT INTO tasks (user_id, title, description, status) VALUES (%s, %s, %s, %s)",
-                (user_id, title, description, "pending")
+                "INSERT INTO tasks (user_id, title, description, status, priority) VALUES (%s, %s, %s, %s, %s)",
+                (user_id, title, description, "pending", priority)
             )
             conn.commit()
             flash("Task created successfully!", "success")
@@ -174,8 +174,8 @@ def edit_task(task_id):
         
         try:
             cursor.execute(
-                "UPDATE tasks SET title=%s, description=%s, updated_at=NOW() WHERE id=%s",
-                (title, description, task_id)
+                "UPDATE tasks SET title=%s, description=%s, priority=%s, updated_at=NOW() WHERE id=%s",
+                (title, description, priority, task_id)
             )
             conn.commit()
             flash("Task updated successfully!", "success")
