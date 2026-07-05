@@ -49,6 +49,7 @@ def create_tables():
                 status VARCHAR(20) DEFAULT 'pending',
                 priority VARCHAR(20) DEFAULT 'medium',
                 due_date DATE,
+                category VARCHAR(50) DEFAULT 'general',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -68,6 +69,13 @@ def create_tables():
             cursor.execute("ALTER TABLE tasks ADD COLUMN due_date DATE")
             conn.commit()
             print("✓ Due date column added successfully")
+        except Exception:
+            pass  # Column already exists
+        # Add category column if it doesn't exist (for existing databases)
+        try:
+            cursor.execute("ALTER TABLE tasks ADD COLUMN category VARCHAR(50) DEFAULT 'general'")
+            conn.commit()
+            print("✓ Category column added successfully")
         except Exception:
             pass  # Column already exists
         
