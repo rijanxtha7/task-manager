@@ -111,22 +111,34 @@ def register():
 
 @login_required
 def dashboard():
-    """Protected dashboard route - requires login"""
+    """Protected dashboard route - requires login with task statistics"""
     users = []
+    task_stats = {"total": 0, "pending": 0, "completed": 0}
     
-    # Show user list if admin
-    if session.get("user_role") == "admin":
-        conn = get_connection()
-        if conn:
-            cursor = conn.cursor()
-            try:
+    user_id = session.get("user_id")
+    conn = get_connection()
+    if conn:
+        cursor = conn.cursor()
+        try:
+            # Get task statistics for logged-in user
+            cursor.execute("SELECT COUNT(*) as total FROM tasks WHERE user_id = %s", (user_id,))
+            task_stats["total"] = cursor.fetchone()["total"]
+            
+            cursor.execute("SELECT COUNT(*) as pending FROM tasks WHERE user_id = %s AND status = 'pending'", (user_id,))
+            task_stats["pending"] = cursor.fetchone()["pending"]
+            
+            cursor.execute("SELECT COUNT(*) as completed FROM tasks WHERE user_id = %s AND status = 'completed'", (user_id,))
+            task_stats["completed"] = cursor.fetchone()["completed"]
+            
+            # Show user list if admin
+            if session.get("user_role") == "admin":
                 cursor.execute("SELECT id, name, email, role, created_at FROM users")
                 users = cursor.fetchall()
-            finally:
-                cursor.close()
-                conn.close()
+        finally:
+            cursor.close()
+            conn.close()
     
-    return render_template("dashboard.html", users=users)
+    return render_template("dashboard.html", users=users, task_stats=task_stats)
 
 def logout():
     """Logout route - clears session"""
