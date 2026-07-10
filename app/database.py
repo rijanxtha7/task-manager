@@ -56,6 +56,22 @@ def create_tables():
             )
         """)
         
+        # Create time_logs table for task time tracking
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS time_logs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                task_id INT NOT NULL,
+                user_id INT NOT NULL,
+                start_time DATETIME NOT NULL,
+                end_time DATETIME,
+                duration INT DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        """)
+        print("✓ Time logs table created successfully")
+        
         # Add priority column if it doesn't exist (for existing databases)
         try:
             cursor.execute("ALTER TABLE tasks ADD COLUMN priority VARCHAR(20) DEFAULT 'medium'")
