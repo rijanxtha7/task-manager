@@ -301,3 +301,105 @@ def search_tasks():
     finally:
         cursor.close()
         conn.close()
+
+def start_timer(task_id):
+    """Start time tracking for a task"""
+    if not session.get("user_id"):
+        return redirect(url_for("auth.login"))
+    
+    user_id = session.get("user_id")
+    conn = get_connection()
+    if not conn:
+        flash("Database connection error.", "danger")
+        return redirect(url_for("tasks.list_tasks"))
+    
+    cursor = conn.cursor()
+    try:
+        # Verify task belongs to user
+        cursor.execute("SELECT * FROM tasks WHERE id = %s AND user_id = %s", (task_id, user_id))
+        task = cursor.fetchone()
+        
+        if not task:
+            flash("Task not found.", "danger")
+            return redirect(url_for("tasks.list_tasks"))
+        
+        # Check if timer is already running for this task
+        cursor.execute("""
+            SELECT * FROM time_logs 
+            WHERE task_id = %s AND user_id = %s AND end_time IS NULL
+        """, (task_id, user_id))
+        existing_log = cursor.fetchone()
+        
+        if existing_log:
+            flash("Timer is already running for this task!", "warning")
+            return redirect(url_for("tasks.list_tasks"))
+        
+        # Start new timer
+        cursor.execute("""
+            INSERT INTO time_logs (task_id, user_id, start_time) 
+            VALUES (%s, %s, NOW())
+        """, (task_id, user_id))
+        conn.commit()
+        flash("Timer started! ⏱", "success")
+    
+    except Exception as e:
+        flash("Error starting timer.", "danger")
+    finally:
+        cursor.close()
+        conn.close()
+    
+    return redirect(url_for("tasks.list_tasks"))
+
+def stop_timer(task_id):
+    """Stop time tracking for a task and calculate duration"""
+    if not session.get("user_id"):
+        return redirect(url_for("auth.login"))
+    
+    user_id = session.get("user_id")
+    conn = get_connection()
+    if not conn:
+        flash("Database connection error.", "danger")
+        return redirect(url_for("tasks.list_tasks"))
+    
+    cursor = conn.cursor()
+    try:
+        # Find active timer for this task
+        cursor.execute("""
+            SELECT * FROM time_logs 
+            WHERE task_id = %s AND user_id = %s AND end_time IS NULL
+        """, (task_id, user_id))
+        log = cursor.fetchone()
+        
+        if not log:
+            flash("No active timer found for this task.", "warning")
+            return redirect(url_for("tasks.list_tasks"))
+        
+        # Stop timer and calculate duration in minutes
+        cursor.execute("""
+            UPDATE time_logs 
+            SET end_time = NOW(), 
+                duration = TIMESTAMPDIFF(MINUTE, start_time, NOW())
+            WHERE id = %s
+        """, (log["id"],))
+        conn.commit()
+        
+        # Get total time spent on this task
+        cursor.execute("""
+            SELECT SUM(duration) as total_minutes 
+            FROM time_logs 
+            WHERE task_id = %s AND user_id = %s AND end_time IS NOT NULL
+        """, (task_id, user_id))
+        result = cursor.fetchone()
+        total_minutes = result["total_minutes"] or 0
+        hours = total_minutes // 60
+        minutes = total_minutes % 60
+        
+        flash(f"Timer stopped! ⏱ Total time spent: {hours}h {minutes}m", "success")
+    
+    except Exception as e:
+        flash("Error stopping timer.", "danger")
+    finally:
+        cursor.close()
+        conn.close()
+    
+    return redirect(url_for("tasks.list_tasks"))
