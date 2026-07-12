@@ -293,7 +293,21 @@ def search_tasks():
         )
         
         tasks = cursor.fetchall()
-        return render_template("tasks.html", tasks=tasks, current_filter="all", search_query=search_query)
+        
+        # Get total time spent per task
+        task_times = {}
+        for task in tasks:
+            cursor.execute("""
+                SELECT 
+                    COALESCE(SUM(CASE WHEN DATE(start_time) = CURDATE() THEN duration ELSE 0 END), 0) as today_seconds,
+                    COALESCE(SUM(duration), 0) as total_seconds
+                FROM time_logs 
+                WHERE task_id = %s AND user_id = %s AND end_time IS NOT NULL
+            """, (task["id"], user_id))
+            time_data = cursor.fetchone()
+            task_times[task["id"]] = time_data
+        
+        return render_template("tasks.html", tasks=tasks, current_filter=status_filter, sort_by=sort_by, sort_order=sort_order, task_times=task_times)
     
     except Exception as e:
         flash("Error searching tasks.", "danger")
@@ -374,27 +388,28 @@ def stop_timer(task_id):
             flash("No active timer found for this task.", "warning")
             return redirect(url_for("tasks.list_tasks"))
         
-        # Stop timer and calculate duration in minutes
+        # Stop timer and calculate duration in seconds
         cursor.execute("""
             UPDATE time_logs 
             SET end_time = NOW(), 
-                duration = TIMESTAMPDIFF(MINUTE, start_time, NOW())
+                duration = TIMESTAMPDIFF(SECOND, start_time, NOW())
             WHERE id = %s
         """, (log["id"],))
         conn.commit()
         
-        # Get total time spent on this task
+        # Get total time spent on this task (in seconds)
         cursor.execute("""
-            SELECT SUM(duration) as total_minutes 
+            SELECT SUM(duration) as total_seconds 
             FROM time_logs 
             WHERE task_id = %s AND user_id = %s AND end_time IS NOT NULL
         """, (task_id, user_id))
         result = cursor.fetchone()
-        total_minutes = result["total_minutes"] or 0
-        hours = total_minutes // 60
-        minutes = total_minutes % 60
+        total_seconds = result["total_seconds"] or 0
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        seconds = total_seconds % 60
         
-        flash(f"Timer stopped! ⏱ Total time spent: {hours}h {minutes}m", "success")
+        flash(f"Timer stopped! ⏱ Total time spent: {hours:02d}:{minutes:02d}:{seconds:02d}", "success")
     
     except Exception as e:
         flash("Error stopping timer.", "danger")
