@@ -404,7 +404,7 @@ def stop_timer(task_id):
             WHERE task_id = %s AND user_id = %s AND end_time IS NOT NULL
         """, (task_id, user_id))
         result = cursor.fetchone()
-        total_seconds = result["total_seconds"] or 0
+        total_seconds = int(result["total_seconds"] or 0)
         hours = total_seconds // 3600
         minutes = (total_seconds % 3600) // 60
         seconds = total_seconds % 60
