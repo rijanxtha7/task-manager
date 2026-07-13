@@ -305,7 +305,10 @@ def search_tasks():
                 WHERE task_id = %s AND user_id = %s AND end_time IS NOT NULL
             """, (task["id"], user_id))
             time_data = cursor.fetchone()
-            task_times[task["id"]] = time_data
+            task_times[str(task["id"])] = {
+                "today_seconds": int(time_data["today_seconds"] or 0),
+                "total_seconds": int(time_data["total_seconds"] or 0)
+            }
         
         return render_template("tasks.html", tasks=tasks, current_filter=status_filter, sort_by=sort_by, sort_order=sort_order, task_times=task_times)
     
