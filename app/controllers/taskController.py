@@ -42,14 +42,40 @@ def list_tasks():
             cursor.execute(query, (user_id,))
         
         tasks = cursor.fetchall()
-        return render_template("tasks.html", tasks=tasks, current_filter=status_filter, sort_by=sort_by, sort_order=sort_order)
+        cursor.close()
+        conn.close()
+        
+        # Get total time spent per task using new connection
+        task_times = {}
+        conn2 = get_connection()
+        if conn2:
+            cursor2 = conn2.cursor()
+            try:
+                for task in tasks:
+                    cursor2.execute("""
+                        SELECT 
+                            COALESCE(SUM(CASE WHEN DATE(start_time) = CURDATE() THEN duration ELSE 0 END), 0) as today_seconds,
+                            COALESCE(SUM(duration), 0) as total_seconds
+                        FROM time_logs 
+                        WHERE task_id = %s AND user_id = %s AND end_time IS NOT NULL
+                    """, (task["id"], user_id))
+                    time_data = cursor2.fetchone()
+                    if time_data:
+                        task_times[str(task["id"])] = {
+                            "today_seconds": int(time_data["today_seconds"] or 0),
+                            "total_seconds": int(time_data["total_seconds"] or 0)
+                        }
+            finally:
+                cursor2.close()
+                conn2.close()
+        
+        return render_template("tasks.html", tasks=tasks, current_filter=status_filter, sort_by=sort_by, sort_order=sort_order, task_times=task_times)
     
     except Exception as e:
         flash("Error fetching tasks.", "danger")
         return render_template("tasks.html", tasks=[])
     finally:
-        cursor.close()
-        conn.close()
+        pass
         
 def create_task():
     """Create a new task with priority, due date, and category"""
@@ -293,31 +319,40 @@ def search_tasks():
         )
         
         tasks = cursor.fetchall()
-        
-        # Get total time spent per task
-        task_times = {}
-        for task in tasks:
-            cursor.execute("""
-                SELECT 
-                    COALESCE(SUM(CASE WHEN DATE(start_time) = CURDATE() THEN duration ELSE 0 END), 0) as today_seconds,
-                    COALESCE(SUM(duration), 0) as total_seconds
-                FROM time_logs 
-                WHERE task_id = %s AND user_id = %s AND end_time IS NOT NULL
-            """, (task["id"], user_id))
-            time_data = cursor.fetchone()
-            task_times[str(task["id"])] = {
-                "today_seconds": int(time_data["today_seconds"] or 0),
-                "total_seconds": int(time_data["total_seconds"] or 0)
-            }
-        
-        return render_template("tasks.html", tasks=tasks, current_filter=status_filter, sort_by=sort_by, sort_order=sort_order, task_times=task_times)
-    
-    except Exception as e:
-        flash("Error searching tasks.", "danger")
-        return render_template("tasks.html", tasks=[], current_filter="all", search_query="")
-    finally:
         cursor.close()
         conn.close()
+        
+        # Get total time spent per task using new connection
+        task_times = {}
+        conn2 = get_connection()
+        if conn2:
+            cursor2 = conn2.cursor()
+            try:
+                for task in tasks:
+                    cursor2.execute("""
+                        SELECT 
+                            COALESCE(SUM(CASE WHEN DATE(start_time) = CURDATE() THEN duration ELSE 0 END), 0) as today_seconds,
+                            COALESCE(SUM(duration), 0) as total_seconds
+                        FROM time_logs 
+                        WHERE task_id = %s AND user_id = %s AND end_time IS NOT NULL
+                    """, (task["id"], user_id))
+                    time_data = cursor2.fetchone()
+                    if time_data:
+                        task_times[str(task["id"])] = {
+                            "today_seconds": int(time_data["today_seconds"] or 0),
+                            "total_seconds": int(time_data["total_seconds"] or 0)
+                        }
+            finally:
+                cursor2.close()
+                conn2.close()
+        
+        return render_template("tasks.html", tasks=tasks, current_filter="all", sort_by="created_at", sort_order="DESC", task_times=task_times, search_query=search_query)
+    
+    except Exception as e:
+        flash("Error fetching tasks.", "danger")
+        return render_template("tasks.html", tasks=[])
+    finally:
+        pass
 
 def start_timer(task_id):
     """Start time tracking for a task"""
