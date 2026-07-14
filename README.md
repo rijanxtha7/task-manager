@@ -4,7 +4,10 @@ A full-stack web application built with Flask and MySQL for managing personal ta
 
 ## Features
 
+## Features
+
 - **User Authentication** - Register, login, and logout securely
+- **Session Management** - Secure user sessions with Flask
 - **Task Management** - Create, read, update, and delete tasks
 - **Task Search** - Search tasks by title or description
 - **Task Filtering** - Filter tasks by status (all, pending, completed)
@@ -13,10 +16,19 @@ A full-stack web application built with Flask and MySQL for managing personal ta
 - **Task Due Dates** - Set optional due dates for tasks
 - **Task Categories** - Organize tasks by category (general, work, personal, shopping, health, other)
 - **Task Toggle** - Mark tasks as complete or incomplete
+- **Time Tracking** - Start and stop timer to track time spent on each task
+- **Time Display** - View today's and total time spent on each task card
 - **Admin Dashboard** - Admin users can manage all users
+- **User Management** - View and manage all registered users
 - **Role-based Access** - Admin and user roles with different permissions
+- **Task Statistics** - View total, pending, and completed task counts
+- **Password Hashing** - Secure password storage with Werkzeug
+- **Input Validation** - Server-side validation for all forms
 - **Error Handling** - Custom 403, 404, and 500 error pages
+- **Flash Messages** - User feedback for all actions
 - **Responsive UI** - Clean and modern interface
+- **Environment Variables** - Secure configuration with python-dotenv
+- **Parameterized Queries** - Protection against SQL injection
 
 ## Technologies Used
 
@@ -61,7 +73,7 @@ TaskManager/
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/rijanxtha7/task-manager.git
+[https://github.com/rijanxtha7/task-manager](https://github.com/rijanxtha7/task-manager)
 cd task-manager
 ```
 
