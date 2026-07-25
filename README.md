@@ -4,8 +4,6 @@ A full-stack web application built with Flask and MySQL for managing personal ta
 
 ## Features
 
-## Features
-
 - **User Authentication** - Register, login, and logout securely
 - **Session Management** - Secure user sessions with Flask
 - **Task Management** - Create, read, update, and delete tasks
